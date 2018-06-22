@@ -27,7 +27,6 @@
   <ItemGroup>
     <Folder Include="go-service\" />
     <Folder Include="rabbitmq-server\" />
-    <Folder Include="POCO\" />
   </ItemGroup>
 
   <ItemGroup>

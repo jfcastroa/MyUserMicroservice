@@ -24,7 +24,9 @@ namespace MyUserMicroservice
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            var connection = @"Data Source=JUANFDOCASTRO\SQLEXPRESS;Initial Catalog=MYUSER;Persist Security Info=True;User ID=UserPrueba;Password=passw0rd";
+           
+
+            var connection = Environment.GetEnvironmentVariable("DATA__DEFAULTCONNECTION__CONNECTIONSTRING") ?? @"Data Source=JUANFDOCASTRO\SQLEXPRESS;Initial Catalog=MYUSER;Persist Security Info=True;User ID=UserPrueba;Password=passw0rd";
             services.AddDbContext<MyUserContext>(options => options.UseSqlServer(connection));
            
         }

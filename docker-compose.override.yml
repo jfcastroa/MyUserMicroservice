@@ -28,7 +28,6 @@ services:
       - 58942:58942
     depends_on:
       - usermssql
-        
      
     build:
       context: .

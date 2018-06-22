@@ -1,16 +1,58 @@
 version: '3.4'
 
 services:
-  myusermicroservice:
+  rabbitmq-server:
+        build: myusermicroservice/rabbitmq-server
+
+
+  # SQL Server at default port (1433, redirect to e.g. 1403 in a machine
+  # with SQL Server installed).
+  usermssql:
+    image: microsoft/mssql-server-linux
+    container_name: sqlserver
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: "P4ss-W0rd!"
+    ports:
+      - 1433:1433
+    networks:
+      - usernetwork
+
+ 
+  # Web API
+  userapi:
+    image: myusermicroservice/user.api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
-      - "80"
-  user.api:
-    image: myusermicroservice/user.api
+      - 58942:58942
+    depends_on:
+      - usermssql
+        
+     
+    build:
+      context: .
+      dockerfile: userapi/Dockerfile
     environment:
-      - ConnectionString=Data Source=JUANFDOCASTRO\SQLEXPRESS;Initial Catalog=MYUSER;Persist Security Info=True;User ID=UserPrueba;Password=passw0rd
-    expose:
-      - "80"
-    ports:
-      - "1433:80"
+      # for Windows use : as separator, for non Windows use __
+      # (see https://github.com/aspnet/Configuration/issues/469)
+      DATA__DEFAULTCONNECTION__CONNECTIONSTRING: "Server=sqlserver\\sqlexpress,1433;Database=MYUSER;User Id=SA;Password=P4ss-W0rd!;MultipleActiveResultSets=true"
+      SERILOG__CONNECTIONSTRING: "Server=sqlserver\\sqlexpress,1433;Database=MYUSER;User Id=SA;Password=P4ss-W0rd!;MultipleActiveResultSets=true"
+      
+    
+ 
+  go-service:
+        build: myusermicroservice/go-service
+        depends_on:
+            - rabbitmq-server
+        tty: true
+        volumes:
+            - './go-service:/go-service'
+
+networks:
+  usernetwork:
+    driver: bridge
+
+# Host volumes used to store code.
+volumes:
+   go-service:
